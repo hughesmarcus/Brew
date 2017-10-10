@@ -10,7 +10,7 @@ import retrofit2.http.Query;
  * Created by marcus on 10/10/17.
  */
 
-interface BreweryAPI {
+public interface BreweryAPI {
     @GET("/breweries")
     Observable<Breweries> getBreweryList(@Query("key")String key,
                        @Query("established")int year);
