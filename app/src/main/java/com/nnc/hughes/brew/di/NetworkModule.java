@@ -1,6 +1,7 @@
 package com.nnc.hughes.brew.di;
 
-import javax.inject.Named;
+import com.nnc.hughes.brew.data.remote.BreweryAPI;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -10,15 +11,13 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import com.nnc.hughes.brew.data.remote.*;
-
 /**
  * Created by marcus on 10/10/17.
  */
 @Module
 public class NetworkModule {
 
-    private static final String NAME_BASE_URL = "http://api.brewerydb.com/v2";
+    private static final String NAME_BASE_URL = "http://api.brewerydb.com/v2/";
 
     @Provides
     @Singleton
@@ -32,7 +31,7 @@ public class NetworkModule {
 
 
         return new Retrofit.Builder()
-                .baseUrl("http://api.brewerydb.com/v2")
+                .baseUrl("http://api.brewerydb.com/v2/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();

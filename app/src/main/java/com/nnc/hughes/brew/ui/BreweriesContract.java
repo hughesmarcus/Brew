@@ -8,6 +8,8 @@ import com.nnc.hughes.brew.data.models.Datum;
 
 import java.util.List;
 
+import io.reactivex.disposables.CompositeDisposable;
+
 /**
  * Created by Marcus on 10/10/2017.
  */
@@ -32,7 +34,7 @@ public interface BreweriesContract {
 
         void dropView();
 
-        void takeView(BreweriesContract.View view);
+        void takeView(BreweriesContract.View view, CompositeDisposable compositeDisposable);
     }
 }
 

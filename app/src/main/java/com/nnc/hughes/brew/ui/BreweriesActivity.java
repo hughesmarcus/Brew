@@ -1,8 +1,8 @@
 package com.nnc.hughes.brew.ui;
 
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
 import com.nnc.hughes.brew.R;
 import com.nnc.hughes.brew.data.models.Datum;
@@ -11,30 +11,47 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
+import io.reactivex.disposables.CompositeDisposable;
+
+import static java.util.Collections.emptyList;
 
 public class BreweriesActivity extends DaggerAppCompatActivity implements BreweriesContract.View {
+    private static final String CURRENT_YEAR = "CURRENT_YEAR";
     @Inject
     BreweriesPresenter presenter;
-    private static final String CURRENT_YEAR = "CURRENT_YEAR";
+    BreweriesAdapter adapter;
+    @BindView(R.id.items_rv)
+    RecyclerView recyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brew_list);
+        ButterKnife.bind(this);
+        adapter = new BreweriesAdapter(this, emptyList(), (datum) -> presenter.openTaskDetails(datum));
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        presenter.takeView(this, compositeDisposable);
+        presenter.loadBreweries(true);
+
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        presenter.takeView(this);
-        presenter.compositeDisposable.
+
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         presenter.dropView();
-        presenter.compositeDisposable.dispose();
     }
 
     @Override
@@ -51,6 +68,7 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
 
     @Override
     public void showTasks(List<Datum> datums) {
+        adapter.replaceData(datums);
 
     }
 
@@ -66,15 +84,8 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
     }
 
     private void showMessage(String message) {
-        Snackbar.make(this, message, Snackbar.LENGTH_LONG).show();
+        //Snackbar.make(this, message, Snackbar.LENGTH_LONG).show();
     }
-
-    public interface TaskItemListener {
-
-        void onTaskClick(Datum clickedDatum);
-
-    }
-
 
 
 }

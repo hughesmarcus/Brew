@@ -24,7 +24,6 @@ public interface AppComponent extends AndroidInjector<DaggerApplication> {
 
     void inject(BrewApplication application);
 
-
     @Override
     void inject(DaggerApplication instance);
 
