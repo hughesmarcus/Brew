@@ -1,12 +1,12 @@
-package com.nnc.hughes.brew.ui;
+package com.nnc.hughes.brew.ui.list;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.nnc.hughes.brew.data.models.Datum;
 import com.nnc.hughes.brew.data.remote.BreweryAPI;
+import com.nnc.hughes.brew.utils.EspressoIdlingResource;
 
 import javax.inject.Inject;
 
@@ -32,28 +32,32 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
     private boolean firstLoad = true;
 
     @Inject
-    BreweriesPresenter(BreweryAPI breweriesRepository) {
+    public BreweriesPresenter(BreweryAPI breweriesRepository) {
         this.breweriesRepository = breweriesRepository;
     }
 
     @Override
-    public void loadBreweries(boolean forceUpdate) {
-        loadBreweries(forceUpdate || firstLoad, true);
+    public void loadBreweries(boolean forceUpdate, int year) {
+        loadBreweries(forceUpdate || firstLoad, true, year);
         firstLoad = false;
     }
 
-    private void loadBreweries(boolean forceUpdate, final boolean showLoadingUI) {
+    private void loadBreweries(boolean forceUpdate, final boolean showLoadingUI, int year) {
         if (showLoadingUI) {
             if (view != null) {
                 view.setLoadingIndicator(true);
             }
         }
-        compositeDisposable.add(breweriesRepository.getBreweryList("d98bfcefa0e5bb66b490574d17e11230", 2012)
+        EspressoIdlingResource.increment();
+        compositeDisposable.add(breweriesRepository.getBreweryList("d98bfcefa0e5bb66b490574d17e11230", year)
                 .subscribeOn(Schedulers.io())
-                .doOnError(error -> view.showLoadingTasksError())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(Breweries -> view.showTasks(Breweries.getData())));
-        Log.v("hello", "here");
+                .doFinally(() -> {
+                    if (!EspressoIdlingResource.getIdlingResource().isIdleNow()) {
+                        EspressoIdlingResource.decrement();
+                    }
+                })
+                .subscribe(Breweries -> view.showTasks(Breweries.getData()), throwable -> view.showLoadingTasksError()));
         if (showLoadingUI) {
             view.setLoadingIndicator(false);
         }
@@ -61,10 +65,10 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
 
     @SuppressLint("RestrictedApi")
     @Override
-    public void openTaskDetails(@NonNull Datum requestedTask) {
-        checkNotNull(requestedTask, "requestedTask cannot be null!");
+    public void openTaskDetails(@NonNull Datum requestedBrewery) {
+        checkNotNull(requestedBrewery, "requestedTask cannot be null!");
         if (view != null) {
-            view.showTaskDetailsUi(requestedTask.getId());
+            view.showTaskDetailsUi(requestedBrewery);
         }
     }
 
@@ -72,7 +76,6 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
     public void takeView(BreweriesContract.View view, CompositeDisposable compositeDisposable) {
         this.view = view;
         this.compositeDisposable = compositeDisposable;
-        loadBreweries(false);
     }
 
     @Override

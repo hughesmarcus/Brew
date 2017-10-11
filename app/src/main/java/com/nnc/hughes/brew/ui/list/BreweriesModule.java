@@ -1,4 +1,4 @@
-package com.nnc.hughes.brew.ui;
+package com.nnc.hughes.brew.ui.list;
 
 import com.nnc.hughes.brew.di.ActivityScoped;
 

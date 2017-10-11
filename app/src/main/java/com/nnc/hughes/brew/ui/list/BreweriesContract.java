@@ -1,4 +1,4 @@
-package com.nnc.hughes.brew.ui;
+package com.nnc.hughes.brew.ui.list;
 
 import android.support.annotation.NonNull;
 
@@ -21,14 +21,16 @@ public interface BreweriesContract {
 
         void showTasks(List<Datum> datums);
 
-        void showTaskDetailsUi(String taskId);
+        void showTaskDetailsUi(Datum brewery);
 
         void showLoadingTasksError();
+
+        void setPresenter();
     }
 
     interface Presenter extends BasePresenter<View> {
 
-        void loadBreweries(boolean forceUpdate);
+        void loadBreweries(boolean forceUpdate, int year);
 
         void openTaskDetails(@NonNull Datum requestedDatum);
 

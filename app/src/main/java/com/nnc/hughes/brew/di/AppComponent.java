@@ -3,6 +3,7 @@ package com.nnc.hughes.brew.di;
 import android.app.Application;
 
 import com.nnc.hughes.brew.BrewApplication;
+import com.nnc.hughes.brew.ui.BreweryIntentService;
 
 import javax.inject.Singleton;
 
@@ -23,6 +24,8 @@ import dagger.android.support.AndroidSupportInjectionModule;
 public interface AppComponent extends AndroidInjector<DaggerApplication> {
 
     void inject(BrewApplication application);
+
+    void inject(BreweryIntentService breweryIntentService);
 
     @Override
     void inject(DaggerApplication instance);

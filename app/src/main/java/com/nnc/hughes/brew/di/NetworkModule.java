@@ -17,7 +17,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 @Module
 public class NetworkModule {
 
-    private static final String NAME_BASE_URL = "http://api.brewerydb.com/v2/";
 
     @Provides
     @Singleton
