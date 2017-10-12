@@ -26,7 +26,7 @@ public class NetworkModule {
 
     @Provides
     @Singleton
-    Retrofit provideRetrofit(Converter.Factory converter) {
+    Retrofit provideRetrofit() {
 
 
         return new Retrofit.Builder()

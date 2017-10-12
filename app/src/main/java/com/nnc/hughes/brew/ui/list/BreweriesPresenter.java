@@ -1,6 +1,5 @@
 package com.nnc.hughes.brew.ui.list;
 
-import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -14,8 +13,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static android.support.v4.util.Preconditions.checkNotNull;
-
 /**
  * Created by Marcus on 10/10/2017.
  */
@@ -28,8 +25,6 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
 
     @Nullable
     private BreweriesContract.View view;
-
-    private boolean firstLoad = true;
 
     @Inject
     public BreweriesPresenter(BreweryAPI breweriesRepository) {
@@ -59,10 +54,8 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
         }
     }
 
-    @SuppressLint("RestrictedApi")
     @Override
     public void openTaskDetails(@NonNull Datum requestedBrewery) {
-        checkNotNull(requestedBrewery, "requestedTask cannot be null!");
         if (view != null) {
             view.showTaskDetailsUi(requestedBrewery);
         }
