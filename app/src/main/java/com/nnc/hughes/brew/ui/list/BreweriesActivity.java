@@ -5,10 +5,12 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.VisibleForTesting;
 import android.support.design.widget.Snackbar;
 import android.support.test.espresso.IdlingResource;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -38,7 +40,7 @@ import io.reactivex.disposables.CompositeDisposable;
 
 import static java.util.Collections.emptyList;
 
-public class BreweriesActivity extends DaggerAppCompatActivity implements BreweriesContract.View {
+public class BreweriesActivity extends DaggerAppCompatActivity implements BreweriesContract.View, SwipeRefreshLayout.OnRefreshListener {
     private static final String CURRENT_YEAR = "CURRENT_YEAR";
     @Inject
     BreweriesPresenter presenter;
@@ -48,6 +50,9 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
     @BindView(R.id.activity_brewery_progressBar)
     ProgressBar progressBar;
     SearchView searchView;
+    @BindView(R.id.swipe_container)
+    SwipeRefreshLayout swipeRefreshLayout;
+    private int year = 2017;
 
 
     @Override
@@ -55,9 +60,9 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         super.onCreate(savedInstanceState);
         setupWindowAnimations();
         setContentView(R.layout.activity_brew_list);
-
-        setupAlarm();
         ButterKnife.bind(this);
+        setupRefresh();
+        setupAlarm();
         adapter = new BreweriesAdapter(this, emptyList(), (datum) -> presenter.openTaskDetails(datum));
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -76,7 +81,8 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                presenter.loadBreweries(false, Integer.parseInt(query));
+                year = Integer.parseInt(query);
+                presenter.loadBreweries(year);
                 return false;
             }
 
@@ -88,19 +94,37 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         return true;
     }
 
+    public void setupRefresh() {
+
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+    }
+
+    @Override
+    public void onRefresh() {
+
+        presenter.loadBreweries(year);
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
     @Override
     public void setPresenter() {
         CompositeDisposable compositeDisposable = new CompositeDisposable();
         presenter.takeView(this, compositeDisposable);
-        presenter.loadBreweries(true, 2017);
+        presenter.loadBreweries(year);
     }
 
     private void setupWindowAnimations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Slide slideTransition = new Slide();
+            slideTransition.setSlideEdge(Gravity.LEFT);
+            slideTransition.setDuration(1000);
 
-        Slide slideTransition = new Slide();
-        slideTransition.setSlideEdge(Gravity.LEFT);
-        slideTransition.setDuration(1000);
-        getWindow().setExitTransition(slideTransition);
+            getWindow().setExitTransition(slideTransition);
+        }
     }
 
     private void setupAlarm() {
@@ -108,9 +132,8 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         Intent i = new Intent(this, BreweryIntentService.class);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        //Set an alarm to trigger the pending intent in intervals of 15 minutes
         AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        //Trigger the alarm starting 1 second from now
+        //Set to go off once a day
         long triggerAtMillis = Calendar.getInstance().getTimeInMillis() + 1000;
         am.setInexactRepeating(AlarmManager.RTC_WAKEUP, triggerAtMillis, AlarmManager.INTERVAL_DAY, pendingIntent);
     }
@@ -118,8 +141,6 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
     @Override
     public void onResume() {
         super.onResume();
-
-
     }
 
     @Override
@@ -127,20 +148,27 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         super.onDestroy();
         presenter.dropView();
     }
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        year = savedInstanceState.getInt(CURRENT_YEAR);
+    }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(CURRENT_YEAR, 2012);
-
-        super.onSaveInstanceState(outState);
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putInt(CURRENT_YEAR, year);
     }
 
     @Override
     public void setLoadingIndicator(boolean active) {
         if (active) {
             progressBar.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+
         } else {
             progressBar.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -154,8 +182,12 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
     public void showTaskDetailsUi(Datum brewery) {
         Intent intent = new Intent(this, BreweryDetailActivity.class);
         intent.putExtra(BreweryDetailActivity.EXTRA_BREWERY_ID, brewery);
-        Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle();
-        this.startActivity(intent, bundle);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bundle bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle();
+            this.startActivity(intent, bundle);
+        } else {
+            this.startActivity(intent);
+        }
     }
 
     @Override
@@ -169,6 +201,9 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
         Snackbar.make(findViewById(R.id.brewery_rv), message, Snackbar.LENGTH_LONG).show();
     }
 
+    /*
+    Sets up a counter
+     */
     @VisibleForTesting
     public IdlingResource getCountingIdlingResource() {
         return EspressoIdlingResource.getIdlingResource();

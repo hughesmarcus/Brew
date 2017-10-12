@@ -37,12 +37,8 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
     }
 
     @Override
-    public void loadBreweries(boolean forceUpdate, int year) {
-        loadBreweries(forceUpdate || firstLoad, true, year);
-        firstLoad = false;
-    }
-
-    private void loadBreweries(boolean forceUpdate, final boolean showLoadingUI, int year) {
+    public void loadBreweries(int year) {
+        boolean showLoadingUI = true;
         if (showLoadingUI) {
             if (view != null) {
                 view.setLoadingIndicator(true);

@@ -1,5 +1,6 @@
 package com.nnc.hughes.brew.ui.detail;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -64,10 +65,11 @@ public class BreweryDetailActivity extends AppCompatActivity {
     }
 
     private void setupWindowAnimations() {
-
-        Fade fade = new Fade();
-        fade.setDuration(1000);
-        getWindow().setEnterTransition(fade);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Fade fade = new Fade();
+            fade.setDuration(1000);
+            getWindow().setEnterTransition(fade);
+        }
     }
 
     @Override

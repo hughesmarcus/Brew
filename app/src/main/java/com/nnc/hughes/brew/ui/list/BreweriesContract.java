@@ -30,7 +30,7 @@ public interface BreweriesContract {
 
     interface Presenter extends BasePresenter<View> {
 
-        void loadBreweries(boolean forceUpdate, int year);
+        void loadBreweries(int year);
 
         void openTaskDetails(@NonNull Datum requestedDatum);
 
