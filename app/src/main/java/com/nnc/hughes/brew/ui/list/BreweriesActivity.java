@@ -73,7 +73,6 @@ public class BreweriesActivity extends DaggerAppCompatActivity implements Brewer
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-
         getMenuInflater().inflate(R.menu.options_menu, menu);
         MenuItem myActionMenuItem = menu.findItem(R.id.search);
         searchView = (SearchView) myActionMenuItem.getActionView();

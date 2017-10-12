@@ -19,7 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class BreweriesPresenter implements BreweriesContract.Presenter {
 
-    private final BreweryAPI breweriesRepository;
+    private final BreweryAPI breweryAPI;
 
     private CompositeDisposable compositeDisposable;
 
@@ -27,8 +27,8 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
     private BreweriesContract.View view;
 
     @Inject
-    public BreweriesPresenter(BreweryAPI breweriesRepository) {
-        this.breweriesRepository = breweriesRepository;
+    public BreweriesPresenter(BreweryAPI breweryAPI) {
+        this.breweryAPI = breweryAPI;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class BreweriesPresenter implements BreweriesContract.Presenter {
             }
         }
         EspressoIdlingResource.increment();
-        compositeDisposable.add(breweriesRepository.getBreweryList("d98bfcefa0e5bb66b490574d17e11230", year)
+        compositeDisposable.add(breweryAPI.getBreweryList("d98bfcefa0e5bb66b490574d17e11230", year)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> {
